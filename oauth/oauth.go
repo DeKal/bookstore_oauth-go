@@ -79,7 +79,7 @@ func AuthenticateRequest(request *http.Request) *errors.RestError {
 	if accessTokenID == "" {
 		return nil
 	}
-	fmt.Println(accessTokenID)
+
 	accessToken, err := getAccessToken(accessTokenID)
 	if err != nil {
 		if err.Status == http.StatusNotFound {
@@ -110,6 +110,9 @@ func getAccessToken(accessTokenID string) (*accessToken, *errors.RestError) {
 	}
 	if response.StatusCode > 299 {
 		restError := errors.RestError{}
+		if response.StatusCode == http.StatusNotFound {
+			return nil, errors.NewNotFoundError("Cannot find access token")
+		}
 		if err := json.Unmarshal(response.Bytes(), &restError); err != nil {
 			return nil, errors.NewInternalServerError("Invalid error interface return when trying to login user")
 		}
